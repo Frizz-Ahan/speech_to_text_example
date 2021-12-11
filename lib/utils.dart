@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Command {
-  static final all = [email, browser1, browser2];
-
+  static final all = [email, browser1, browser2,];
+  // static const  on = "on";
   static const email = 'write email';
   static const browser1 = 'open';
   static const browser2 = 'go to';
+  static const brave = 'on';
+  static const brave2 = 'off';
+
 }
 
 class Utils {
@@ -64,4 +67,5 @@ class Utils {
       await launch(url);
     }
   }
+
 }
