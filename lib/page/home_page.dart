@@ -63,12 +63,21 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(30).copyWith(bottom: 150),
           child: Column(
             children: [
-              Switch(
-                value: change,
-                activeColor: Colors.green,
-                activeTrackColor: Colors.green, onChanged: (bool value) {  },
-
+              SubstringHighlight(
+                text: text,
+                terms: Command.all,
+                textStyle: TextStyle(
+                  fontSize: 32.0,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w400,
+                ),
+                textStyleHighlight: TextStyle(
+                  fontSize: 32.0,
+                  color: Colors.red,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
+
               Container(
                 // color: Colors.yellow,
                 height: MediaQuery.of(context).size.height * 1.32,
@@ -177,20 +186,7 @@ class _HomePageState extends State<HomePage> {
               ),
 
 
-              SubstringHighlight(
-                text: text,
-                terms: Command.all,
-                textStyle: TextStyle(
-                  fontSize: 32.0,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-                textStyleHighlight: TextStyle(
-                  fontSize: 32.0,
-                  color: Colors.red,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+
             ],
           ),
         ),
@@ -207,6 +203,16 @@ class _HomePageState extends State<HomePage> {
       );
 String ob = "";
 int index = 0;
+
+Future checkListen(isListening)async{
+  setState(() => this.isListening = isListening);
+  if (!isListening) {
+    Future.delayed(Duration(seconds: 1), () {
+      Utils.scanText(text);
+    });
+  }
+}
+
   Future toggleRecording() async{
     SpeechApi.toggleRecording(
       onResult: (text) => setState(() => this.text = text),
@@ -220,14 +226,36 @@ int index = 0;
         }
 
           for(int i=0;i<nameDataList.length;i++){
+            print("1111object1245 ${nameDataList[i]}");
             if(text.contains(nameDataList[i]) && text.contains("on")){
                ob = nameDataList[i];
-
+              index = i;
               print("object1245 $ob");
               setState(() {
                 change = true;
               });
-              break;
+               if(text.contains("on")){
+                 if(responseGetData[index] == 0){
+                   print("00po $index");
+                   setState(() {
+                     responseGetData[index] = 1;
+                   });
+                    dataUpdateForPin19();
+                    // getStatus();
+                 }
+               }
+               if(text.contains("off")){
+                 if(responseGetData[index] == 1){
+                   print("00po $index");
+                   setState(() {
+                     responseGetData[index] = 0;
+                   });
+                    dataUpdateForPin19();
+                    // getStatus();
+                 }
+               }
+
+               break;
             }
             if(text.contains("off") && text.contains(nameDataList[i])){
               print("pppppppp");
@@ -236,40 +264,79 @@ int index = 0;
                 ob = nameDataList[i];
 
               });
+              index = i;
+              print("object1245 $ob");
+              setState(() {
+                change = true;
+              });
+              if(text.contains("on")){
+                if(responseGetData[index] == 0){
+                  print("00po $index");
+                  setState(() {
+                    responseGetData[index] = 1;
+                  });
+                   dataUpdateForPin19();
+                   // getStatus();
+                }
+              }
+              if(text.contains("off")){
+                if(responseGetData[index] == 1){
+                  print("00po $index");
+                  setState(() {
+                    responseGetData[index] = 0;
+                  });
+                   dataUpdateForPin19();
+                   // getStatus();
+                }
+              }
+
               break;
             }
 
 
           }
-          for(int i=0;i<nameDataList.length;i++){
-            if(ob == nameDataList[i]){
-                index = i;
-                print("POPO $ob");
-                if(text.contains("on")){
-                  if(responseGetData[index] == 0){
-                    print("00po $index");
-                    setState(() {
-                      responseGetData[index] = 1;
-                    });
-                    await dataUpdateforPin19();
-                    await getStatus();
-                  }
-                }
-                if(text.contains("off")){
-                  if(responseGetData[index] == 1){
-                    print("00po $index");
-                    setState(() {
-                      responseGetData[index] = 0;
-                    });
-                    await dataUpdateforPin19();
-                    await getStatus();
-                  }
-                }
 
-                break;
+          if(text.contains("Off All Devices") || text.contains("off all devices")){
+            int i=0;
+            while(i<responseGetData.length){
+              print('goooo');
+              if(responseGetData[i] == 1 && responseGetData[i] == 0){
+                setState(() {
+                  responseGetData[i] = 0;
+                });
+              }
+              i++;
             }
-
           }
+          // for(int i=0;i<nameDataList.length;i++){
+          //   if(ob == nameDataList[i]){
+          //       index = i;
+          //       print("POPO $ob");
+          //       if(text.contains("on")){
+          //         if(responseGetData[index] == 0){
+          //           print("00po $index");
+          //           setState(() {
+          //             responseGetData[index] = 1;
+          //           });
+          //           await dataUpdateForPin19();
+          //           await getStatus();
+          //         }
+          //       }
+          //       if(text.contains("off")){
+          //         if(responseGetData[index] == 1){
+          //           print("00po $index");
+          //           setState(() {
+          //             responseGetData[index] = 0;
+          //           });
+          //           await dataUpdateForPin19();
+          //           await getStatus();
+          //         }
+          //       }
+          //
+          //       break;
+          //   }
+          //
+          // }
 
 
 
@@ -278,10 +345,7 @@ int index = 0;
     );
     // check();
   }
-  check(){
-   var a= text.substring(1,8);
-   print("AAAA $a");
-  }
+
 
   List<PinStatus> a =[];
   List responseGetData = [];
@@ -312,7 +376,7 @@ int index = 0;
     }
   }
 
-  dataUpdateforPin19() async {
+  dataUpdateForPin19() async {
     final url = "http://genorion1.herokuapp.com/getpostdevicePinStatus/?d_id=DIDM12932021AAAAAA";
     String token = "16661fcd5d214e43471bc304899f41c2ec2b811c";
     var data = {
@@ -327,20 +391,21 @@ int index = 0;
       'pin7Status': responseGetData[6],
       'pin8Status': responseGetData[7],
       'pin9Status': responseGetData[8],
-      'pin10Status': responseGetData[9],
-      'pin11Status': responseGetData[10],
-      'pin12Status': responseGetData[11],
+      // 'pin10Status': responseGetData[9],
+      // 'pin11Status': responseGetData[10],
+      // 'pin12Status': responseGetData[11],
 
     };
-    http.Response response =
+    final response =
     await http.post(Uri.parse(url), body: jsonEncode(data), headers: {
       'Content-Type': 'application/json; charset=UTF-8',
       'Authorization': 'Token $token',
     });
-    if (response.statusCode == 201) {
+    if (response.statusCode >0) {
       print("Data Updated  ${response.body}");
+      print("Data Updated  ${response.statusCode}");
 
-      getStatus();
+     await getStatus();
       //jsonDecode only for get method
       //return place_type.fromJson(jsonDecode(response.body));
     } else {
